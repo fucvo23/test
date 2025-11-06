@@ -67,6 +67,7 @@
         .game-box {
             display: none;
         }
+        /*-------------TAI XIU-----------*/
           /* base for action buttons */
         .game-action{
             -webkit-appearance:none;
@@ -181,6 +182,68 @@
             .dice{ width:48px; height:48px; font-size:18px; }
         }
 
+        /*-----------CARD-------------*/
+        #cardBoard .card {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform .35s;
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .card .front,
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:28px;
+            font-weight:bold;
+            backface-visibility:hidden;
+        }
+
+        .card .back {
+            background:#222;
+            color:#fff;
+        }
+
+        .card .front {
+            background:#ffd54a;
+            color:#000;
+            transform: rotateY(180deg);
+        }
+        /*--------ĐOÁN SỐ------*/
+        #userGuess {
+            background: #111;
+            color: #00eaff; /* màu chữ sáng nổi bật */
+            border: 2px solid #00eaff;
+            font-weight: 700;
+            text-align: center;
+        }
+        #userGuess::placeholder {
+            color: #7dd9ff99;
+            font-size: 18px; /* 👈 chữ nhỏ lại */
+            opacity: 0.8;   /* 👈 nhẹ nhàng hơn */
+            text-align: center;
+        }
+        #userGuess::-webkit-inner-spin-button,
+        #userGuess::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Ẩn trên Firefox */
+        #userGuess {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body class="is-preload">
@@ -200,7 +263,7 @@
     </section>
 
     <!-- Content -->
-    <div id="wrapper" style="margin-top: 0;">
+    <div id="wrapper" style="margin-top: 0px;">
         <section class="wrapper style1 fade-up fullscreen">
             <div class="inner">
                 <h1>Giải Trí</h1>
@@ -265,13 +328,66 @@
 
                     <div id="cardmatch" class="game-box">
                         <h3>🂠 Game Tìm bài giống nhau</h3>
-                        <p>(Nội dung game sẽ được lập trình sau)</p>
+                        <p style="margin-top:6px; font-size:16px; color:var(--muted);">
+                            Luật chơi: Mỗi lược được lật 2 lá bài. Nếu giống nhau chúng sẽ biến mất khỏi bàn chơi và bạn được lật tiếp. Nếu không giống nhau, thẻ sẽ úp lại. Hãy ghi nhớ những chỗ sai nhé!
+                            Kết thúc khi tất cả lá bài đều biến mất
+                        </p>
+                        <div style="margin-bottom:12px;">
+                            <label style="color:#fff; font-weight:600;">Chọn số ô:</label>
+                            <select id="card-count" style="padding:6px 10px; border-radius:6px; margin-bottom: 35px;">
+                                <option value="16">16 ô (4x4)</option>
+                                <option value="20">20 ô (4x5)</option>
+                                <option value="24">24 ô (4x6)</option>
+                                <option value="30">28 ô (4x7)</option>
+                            </select>
+                            <button onclick="startGame()" class="game-action xoc">Bắt đầu</button>
+                            <button onclick="resetGame()" class="game-action tai">Reset</button>
+                        </div>
+
+                        <div style="margin:8px 0; color:#fff;">
+                            ⏱ Thời gian: <span id="timer">0</span> giây  
+                            | ❌ Sai: <span id="wrong">0</span>
+                        </div>
+                        <div id="finalResult" style="margin-top:15px; font-size:18px; font-weight:700; color:#00ffdd;"></div>
+
+                        <div id="cardBoard" 
+                            style="display:grid; gap:10px; justify-content:center;">
+                        </div>
+
+                        
                     </div>
 
                     <div id="guessnum" class="game-box">
-                        <h3>🔢 Game Đoán số</h3>
-                        <p>(Nội dung game sẽ được lập trình sau)</p>
+                        <h3>🔢 Game Đoán số bí mật</h3>
+                        <p style="margin-top:6px; font-size:16px; color:var(--muted);">
+                            Luật chơi:
+                            Máy sẽ chọn ngẫu nhiên một số từ <strong>1 đến 100</strong>
+                            Bạn nhập số dự đoán vào ô rồi bấm <strong>Đoán</strong>
+                            Máy sẽ báo <em>Cao hơn</em> hoặc <em>Thấp hơn</em> để bạn khoanh vùng
+                            Đoán đúng → Bạn chiến thắng 🎉
+                            Bấm <strong>Chơi lại</strong> để bắt đầu ván mới 🔁
+                        </p>
+                        <p style="color:var(--muted)">Máy đã chọn 1 số từ 1 đến 100. Hãy thử đoán nhé!</p>
+
+                        <input type="number" id="userGuess" 
+                            placeholder="Nhập số (1-100)" 
+                            min="1" max="100"
+                            style="padding:10px; width:160px; border-radius:6px;">
+
+                        <button onclick="doanSo()" class="game-action tai"
+                                style="min-width:120px; margin-left:10px;">
+                            Đoán
+                        </button>
+
+                        <button onclick="choiLai()" class="game-action xiu"
+                                style="min-width:120px;">
+                            Chơi lại
+                        </button>
+
+                        <p id="msgGuess" style="margin-top:15px; font-size:18px; font-weight:700;"></p>
+                        <p style="color:var(--muted)">Số lần đoán: <span id="countGuess">0</span></p>
                     </div>
+
                 </section>
 
             </div>
@@ -297,149 +413,297 @@
             resetAllGames()
             document.querySelectorAll('.game-box').forEach(g => g.style.display = "none");
             document.getElementById(id).style.display = "block";
+
+            if (id === "guessnum") initGuessGame();
         }
+
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/browser.min.js"></script>
     <script src="assets/js/breakpoints.min.js"></script>
     <script src="assets/js/util.js"></script>
     <script src="assets/js/main.js"></script>
-    <!--tai xiu-->
-    <script>
+    
+    <script> // --------TAI XIU-------
     // giữ nguyên biến toàn cục cuoc
-    let cuoc = null;
+        let cuoc = null;
 
-    // Khi người dùng chọn Tài / Xỉu
-    function datCuoc(loai) {
-        cuoc = loai;
-        const label = loai === 'tai' ? 'TÀI' : 'XỈU';
+        // Khi người dùng chọn Tài / Xỉu
+        function datCuoc(loai) {
+            cuoc = loai;
+            const label = loai === 'tai' ? 'TÀI' : 'XỈU';
 
-        // Hiển thị hai dòng khi chọn: dòng chọn + hướng dẫn
-        document.getElementById("thongBaoCuoc").innerHTML =
-        `<div style="color:#fff">✅ Bạn đã chọn: <span style="color:var(--muted); font-weight:900">${label}</span></div>` +
-        `<div id="tb-huongdan" style="font-size:13px; color:var(--muted); margin-top:4px">Nhấn <strong>Xóc xúc xắc</strong> để bắt đầu</div>`;
+            // Hiển thị hai dòng khi chọn: dòng chọn + hướng dẫn
+            document.getElementById("thongBaoCuoc").innerHTML =
+            `<div style="color:#fff">✅ Bạn đã chọn: <span style="color:var(--muted); font-weight:900">${label}</span></div>` +
+            `<div id="tb-huongdan" style="font-size:13px; color:var(--muted); margin-top:4px">Nhấn <strong>Xóc xúc xắc</strong> để bắt đầu</div>`;
 
-        // ẩn thongBaoMacDinh
-        const th = document.getElementById('thongBaoMacDinh');
-        if (th) th.style.display = 'none';
+            // ẩn thongBaoMacDinh
+            const th = document.getElementById('thongBaoMacDinh');
+            if (th) th.style.display = 'none';
 
-        // cập nhật visual selected
-        document.getElementById('btn-tai').classList.toggle('selected', loai === 'tai');
-        document.getElementById('btn-xiu').classList.toggle('selected', loai === 'xiu');
-    }
-
-    // random die
-    function randomDie(){ return Math.floor(Math.random() * 6) + 1; }
-
-    // Khi bấm Xóc xúc xắc
-    function choiTaiXiu() {
-        if (!cuoc) {
-        alert("⚠️ Bạn phải đặt cược trước!");
-        return;
+            // cập nhật visual selected
+            document.getElementById('btn-tai').classList.toggle('selected', loai === 'tai');
+            document.getElementById('btn-xiu').classList.toggle('selected', loai === 'xiu');
         }
 
-        // BẮT ĐẦU: bỏ dòng hướng dẫn "Nhấn Xóc..." nhưng giữ phần "Bạn đã chọn"
-        const tb = document.getElementById('thongBaoCuoc');
-        if (tb) {
-        // chỉ giữ phần đầu (✅ Bạn đã chọn: ...)
-        const chosen = tb.querySelector('div');
-        tb.innerHTML = chosen ? chosen.outerHTML : tb.innerHTML;
+        // random die
+        function randomDie(){ return Math.floor(Math.random() * 6) + 1; }
+
+        // Khi bấm Xóc xúc xắc
+        function choiTaiXiu() {
+            if (!cuoc) {
+            alert("⚠️ Bạn phải đặt cược trước!");
+            return;
+            }
+
+            // BẮT ĐẦU: bỏ dòng hướng dẫn "Nhấn Xóc..." nhưng giữ phần "Bạn đã chọn"
+            const tb = document.getElementById('thongBaoCuoc');
+            if (tb) {
+            // chỉ giữ phần đầu (✅ Bạn đã chọn: ...)
+            const chosen = tb.querySelector('div');
+            tb.innerHTML = chosen ? chosen.outerHTML : tb.innerHTML;
+            }
+
+            // disable buttons while animating
+            const btns = [document.getElementById('btn-tai'), document.getElementById('btn-xiu'), document.getElementById('btn-xoc')];
+            btns.forEach(b => b.disabled = true);
+            document.getElementById('btn-xoc').classList.add('rolling');
+
+            const d1 = document.getElementById('d1');
+            const d2 = document.getElementById('d2');
+            const d3 = document.getElementById('d3');
+            const summary = document.getElementById('summary');
+
+            // animation: show rolling numbers for ~900ms
+            const rollDuration = 2500;
+            const fps = 80;
+            const steps = Math.ceil(rollDuration / fps);
+            let count = 0;
+            const iv = setInterval(()=>{
+            d1.classList.add('animate');
+            d2.classList.add('animate');
+            d3.classList.add('animate');
+            d1.innerText = randomDie();
+            d2.innerText = randomDie();
+            d3.innerText = randomDie();
+            count++;
+            if(count > steps){
+                clearInterval(iv);
+                d1.classList.remove('animate');
+                d2.classList.remove('animate');
+                d3.classList.remove('animate');
+
+                // final result
+                const x1 = randomDie();
+                const x2 = randomDie();
+                const x3 = randomDie();
+                const tong = x1 + x2 + x3;
+                d1.innerText = x1;
+                d2.innerText = x2;
+                d3.innerText = x3;
+
+                const ket = (tong >= 11) ? 'tai' : 'xiu';
+                summary.innerHTML = `<strong style="color:#fff"> ${x1} + ${x2} + ${x3} = ${tong}</strong><br><span style="color:${ket===cuoc? '#00ff7f':'#ff6b6b'}; font-weight:800;">${ket===cuoc? '🎉 Bạn THẮNG!':'💥 Bạn THUA!'}</span>`;
+                setTimeout(()=> {
+
+
+                btns.forEach(b => b.disabled = false);
+                document.getElementById('btn-xoc').classList.remove('rolling');
+                }, 50);
+            }
+            }, fps);
         }
+        function resetCuoc() {
+            // reset biến cược
+            cuoc = null;
 
-        // disable buttons while animating
-        const btns = [document.getElementById('btn-tai'), document.getElementById('btn-xiu'), document.getElementById('btn-xoc')];
-        btns.forEach(b => b.disabled = true);
-        document.getElementById('btn-xoc').classList.add('rolling');
+            // hiện lại thông báo mặc định phía trên
+            const th = document.getElementById('thongBaoMacDinh');
+            if (th) th.style.display = 'block';
 
-        const d1 = document.getElementById('d1');
-        const d2 = document.getElementById('d2');
-        const d3 = document.getElementById('d3');
-        const summary = document.getElementById('summary');
+            // xóa thông báo chọn cược hiện tại
+            const tb = document.getElementById('thongBaoCuoc');
+            if (tb) tb.innerHTML = '';
 
-        // animation: show rolling numbers for ~900ms
-        const rollDuration = 2500;
-        const fps = 80;
-        const steps = Math.ceil(rollDuration / fps);
-        let count = 0;
-        const iv = setInterval(()=>{
-        d1.classList.add('animate');
-        d2.classList.add('animate');
-        d3.classList.add('animate');
-        d1.innerText = randomDie();
-        d2.innerText = randomDie();
-        d3.innerText = randomDie();
-        count++;
-        if(count > steps){
-            clearInterval(iv);
-            d1.classList.remove('animate');
-            d2.classList.remove('animate');
-            d3.classList.remove('animate');
+            // xóa phần summary kết quả
+            const summary = document.getElementById('summary');
+            if (summary) summary.innerHTML = '';
 
-            // final result
-            const x1 = randomDie();
-            const x2 = randomDie();
-            const x3 = randomDie();
-            const tong = x1 + x2 + x3;
-            d1.innerText = x1;
-            d2.innerText = x2;
-            d3.innerText = x3;
+            // reset xúc xắc về trạng thái ban đầu
+            const d1 = document.getElementById('d1');
+            const d2 = document.getElementById('d2');
+            const d3 = document.getElementById('d3');
+            if (d1) d1.innerText = '-';
+            if (d2) d2.innerText = '-';
+            if (d3) d3.innerText = '-';
 
-            const ket = (tong >= 11) ? 'tai' : 'xiu';
-            summary.innerHTML = `<strong style="color:#fff"> ${x1} + ${x2} + ${x3} = ${tong}</strong><br><span style="color:${ket===cuoc? '#00ff7f':'#ff6b6b'}; font-weight:800;">${ket===cuoc? '🎉 Bạn THẮNG!':'💥 Bạn THUA!'}</span>`;
+            // bật lại nút nếu đang disabled và bỏ hiệu ứng rolling
+            const btns = [document.getElementById('btn-tai'), document.getElementById('btn-xiu'), document.getElementById('btn-xoc')];
+            btns.forEach(b => { if (b) { b.disabled = false; b.classList.remove('rolling'); } });
 
-            // sau khi chơi: hiện lại dòng mặc định phía trên, bật lại nút, bỏ hiệu ứng rolling
-            setTimeout(()=> {
-            //const th = document.getElementById('thongBaoMacDinh');
-            //if (th) th.style.display = 'block';
-
-            btns.forEach(b => b.disabled = false);
-            document.getElementById('btn-xoc').classList.remove('rolling');
-
-            // nếu muốn reset trạng thái chọn sau lượt thì bỏ comment dòng dưới
-            // cuoc = null;
-            // document.getElementById("thongBaoCuoc").innerHTML = '';
-            // document.getElementById('btn-tai').classList.remove('selected');
-            // document.getElementById('btn-xiu').classList.remove('selected');
-            }, 50);
+            // bỏ class selected trên nút cược
+            const btnTai = document.getElementById('btn-tai');
+            const btnXiu = document.getElementById('btn-xiu');
+            if (btnTai) btnTai.classList.remove('selected');
+            if (btnXiu) btnXiu.classList.remove('selected');
         }
-        }, fps);
-    }
-    function resetCuoc() {
-        // reset biến cược
-        cuoc = null;
-
-        // hiện lại thông báo mặc định phía trên
-        const th = document.getElementById('thongBaoMacDinh');
-        if (th) th.style.display = 'block';
-
-        // xóa thông báo chọn cược hiện tại
-        const tb = document.getElementById('thongBaoCuoc');
-        if (tb) tb.innerHTML = '';
-
-        // xóa phần summary kết quả
-        const summary = document.getElementById('summary');
-        if (summary) summary.innerHTML = '';
-
-        // reset xúc xắc về trạng thái ban đầu
-        const d1 = document.getElementById('d1');
-        const d2 = document.getElementById('d2');
-        const d3 = document.getElementById('d3');
-        if (d1) d1.innerText = '-';
-        if (d2) d2.innerText = '-';
-        if (d3) d3.innerText = '-';
-
-        // bật lại nút nếu đang disabled và bỏ hiệu ứng rolling
-        const btns = [document.getElementById('btn-tai'), document.getElementById('btn-xiu'), document.getElementById('btn-xoc')];
-        btns.forEach(b => { if (b) { b.disabled = false; b.classList.remove('rolling'); } });
-
-        // bỏ class selected trên nút cược
-        const btnTai = document.getElementById('btn-tai');
-        const btnXiu = document.getElementById('btn-xiu');
-        if (btnTai) btnTai.classList.remove('selected');
-        if (btnXiu) btnXiu.classList.remove('selected');
-    }
 
     </script>
+    
+    <script> // --------CARD GAME-------
+        let timerInterval;
+        let timeCount = 0;
+        let wrongCount = 0;
+        let hasGameStarted = false;
+        let firstCard = null;
+        let lockBoard = false;
+        let matchedPairs = 0;
+        let totalPairs = 0;
+
+        function startGame() {
+            resetGame();
+            const count = parseInt(document.getElementById("card-count").value);
+            totalPairs = count / 2;
+
+            const columns = Math.ceil(count / 4);
+            const board = document.getElementById("cardBoard");
+            board.style.gridTemplateColumns = `repeat(${columns}, 80px)`;
+
+            let values = [];
+            for (let i = 1; i <= totalPairs; i++) {
+                values.push(i, i);
+            }
+
+            values.sort(() => Math.random() - 0.5);
+
+            values.forEach(v => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.dataset.value = v;
+                card.innerHTML = `
+                    <div class="front">${v}</div>
+                    <div class="back">?</div>`;
+                card.addEventListener("click", flipCard);
+                board.appendChild(card);
+            });
+
+            hasGameStarted = true;
+            timerInterval = setInterval(() => {
+                timeCount++;
+                document.getElementById("timer").innerText = timeCount;
+            }, 1000);
+        }
+
+        function flipCard() {
+            if(!hasGameStarted || lockBoard) return;
+            if(this.classList.contains("flip")) return;
+
+            this.classList.add("flip");
+
+            if(!firstCard) {
+                firstCard = this;
+            } else {
+                lockBoard = true;
+                let secondCard = this;
+
+                if(firstCard.dataset.value === secondCard.dataset.value) {
+                    setTimeout(() => {
+                        firstCard.style.visibility = "hidden";
+                        secondCard.style.visibility = "hidden";
+                        matchedPairs++;
+                        if(matchedPairs === totalPairs) endGame();
+                        resetChoices();
+                    }, 500);
+                } else {
+                    wrongCount++;
+                    document.getElementById("wrong").innerText = wrongCount;
+                    setTimeout(() => {
+                        firstCard.classList.remove("flip");
+                        secondCard.classList.remove("flip");
+                        resetChoices();
+                    }, 800);
+                }
+            }
+        }
+
+        function resetChoices() {
+            firstCard = null;
+            lockBoard = false;
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const score = timeCount + wrongCount;
+            document.getElementById("finalResult").innerHTML =
+                `🎉 Kết thúc! Điểm của bạn: <span style="color:#ffb300">${score}</span>`;
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            document.getElementById("cardBoard").innerHTML = "";
+            document.getElementById("timer").innerText = 0;
+            document.getElementById("wrong").innerText = 0;
+            document.getElementById("finalResult").innerHTML = "";
+            timeCount = 0;
+            wrongCount = 0;
+            matchedPairs = 0;
+            firstCard = null;
+            lockBoard = false;
+            hasGameStarted = false;
+        }
+
+
+    </script>
+    <script> // ------ĐOÁN SỐ-----
+        let soBiMat;
+        let soLanDoan;
+
+        function initGuessGame() {
+            soBiMat = Math.floor(Math.random() * 100) + 1; // 1-100
+            soLanDoan = 0;
+            document.getElementById("msgGuess").innerText = "";
+            document.getElementById("countGuess").innerText = soLanDoan;
+            document.getElementById("userGuess").value = "";
+        }
+
+        function doanSo() {
+            const inputField = document.getElementById("userGuess");
+            const msg = document.getElementById("msgGuess");
+            let guess = parseInt(inputField.value);
+
+            // Kiểm tra hợp lệ
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                msg.style.color = "#ff5555";
+                msg.innerText = "⚠️ Vui lòng nhập số từ 1 đến 100!";
+                return;
+            }
+
+            soLanDoan++;
+            document.getElementById("countGuess").innerText = soLanDoan;
+
+            if (guess === soBiMat) {
+                msg.style.color = "#00ff7f";
+                msg.innerText = `🎉 Chính xác! Số bí mật là ${soBiMat}`;
+            } else if (guess < soBiMat) {
+                msg.style.color = "#ffd54a";
+                msg.innerText = "📉 Thấp quá! Thử số lớn hơn 👉";
+            } else {
+                msg.style.color = "#ffb300";
+                msg.innerText = "📈 Cao quá! Thử số nhỏ hơn 👇";
+            }
+        }
+
+        function choiLai() {
+            initGuessGame();
+        }
+
+        // Khởi tạo khi mở tab
+        initGuessGame();
+    </script>
+
+
+
 
 </body>
 </html>
